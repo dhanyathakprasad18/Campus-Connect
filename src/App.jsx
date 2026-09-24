@@ -12,9 +12,10 @@ import EventDetailsPage from "./pages/EventDetailsPage";
 import AboutPage from "./pages/AboutPage";
 
 
+
 function App() {
     const [events, setEvents] = useState([]);
-
+    const [editingEvent, setEditingEvent] = useState(null);
     useEffect(()=>{
         fetch("http://localhost:5000/api/events")
         .then((response)=>response.json())
@@ -24,12 +25,26 @@ function App() {
     }, []);
 
     function handleAddEvent(newEvent) {
-        setEvents([...events, newEvent]);
+        fetch("http://localhost:5000/api/events",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify(newEvent)
+        }).then((response)=>response.json())
+        .then((data)=>{
+            console.log(data);
+            fetch("http://localhost:5000/api/events/")
+            .then((response)=>response.json())
+            .then((data)=>{
+                setEvents(data);
+            })
+        })
     }
 
     function handleDeleteEvent(eventId) {
         fetch(`http://localhost:5000/api/events/${eventId}`,{
-            method: "DELETE"
+            method:"DELETE"
         }).then((response)=>response.json())
         .then((data)=>{
             console.log(data);
@@ -37,8 +52,35 @@ function App() {
             .then((response)=>response.json())
             .then((data)=>{
                 setEvents(data);
-            })
-        })
+            });
+        });
+    }
+
+    function handleEditEvent(eventId){
+        const selectedEvent = events.find(function(event){
+            return event._id === eventId;
+        });
+        setEditingEvent(selectedEvent);
+    }
+
+    function handleUpdateEvent(updatedEvent){
+        fetch(`http://localhost:5000/api/events/${updatedEvent._id}`, {
+            method : "PUT",
+            headers: {
+                "Content-Type" : "application/json"
+            },
+            body: JSON.stringify(updatedEvent)
+        }).then((response)=>response.json())
+        .then((data)=>{
+            console.log(data);
+
+            fetch("http://localhost:5000/api/events")
+            .then((response) => response.json())
+            .then((data) => {
+                setEvents(data);
+                setEditingEvent(null);
+            });
+        });
     }
 
     return (
@@ -53,6 +95,9 @@ function App() {
                             events={events}
                             onAddEvent={handleAddEvent}
                             onDeleteEvent={handleDeleteEvent}
+                            onEditEvent={handleEditEvent}
+                            editingEvent={editingEvent}
+                            onUpdateEvent={handleUpdateEvent}
                         />
                     }
                 />
