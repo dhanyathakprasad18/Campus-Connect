@@ -10,6 +10,9 @@ import HomePage from "./pages/HomePage";
 import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import AboutPage from "./pages/AboutPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+
 
 
 
@@ -28,7 +31,8 @@ function App() {
         fetch("http://localhost:5000/api/events",{
             method:"POST",
             headers:{
-                "Content-Type":"application/json"
+                "Content-Type":"application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
             },
             body: JSON.stringify(newEvent)
         }).then((response)=>response.json())
@@ -44,7 +48,10 @@ function App() {
 
     function handleDeleteEvent(eventId) {
         fetch(`http://localhost:5000/api/events/${eventId}`,{
-            method:"DELETE"
+            method:"DELETE",
+            headers:{
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
         }).then((response)=>response.json())
         .then((data)=>{
             console.log(data);
@@ -67,7 +74,8 @@ function App() {
         fetch(`http://localhost:5000/api/events/${updatedEvent._id}`, {
             method : "PUT",
             headers: {
-                "Content-Type" : "application/json"
+                "Content-Type" : "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
             },
             body: JSON.stringify(updatedEvent)
         }).then((response)=>response.json())
@@ -125,6 +133,19 @@ function App() {
                     path="/about"
                     element={<AboutPage />}
                 />
+                <Route 
+                    path="/about"
+                    element={<AboutPage />}
+                />
+                <Route
+                    path="/login"
+                    element={<LoginPage />}
+                />
+                <Route 
+                    path="/register"
+                    element={<RegisterPage />}
+                />
+
             </Routes>
 
             <Footer />

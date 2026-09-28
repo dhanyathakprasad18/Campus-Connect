@@ -8,6 +8,8 @@ const dns = require("dns");
 const Event = require("./models/Event");
 const User = require("./models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const authMiddleware = require("./middleware/authMiddleware");
 
 app.use(cors());
 app.use(express.json());
@@ -20,38 +22,38 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log("MongoDB Connection Error: ",error);
 });
 
-const initialEvents = [
-  {
-    id: 1,
-    title: "MERN Stack Workshop",
-    category: "Technology",
-    date: "25 September 2026",
-    time: "10:00 AM",
-    location: "Computer Lab 1",
-    description:
-      "Learn the basics of MongoDB, Express, React, and Node.js through a practical workshop.",
-  },
-  {
-    id: 2,
-    title: "College Hackathon",
-    category: "Technology",
-    date: "28 September 2026",
-    time: "9:00 AM",
-    location: "Main Auditorium",
-    description:
-      "Form a team, solve a real problem, and present your solution to mentors.",
-  },
-  {
-    id: 3,
-    title: "Photography Club Meet",
-    category: "Club",
-    date: "30 September 2026",
-    time: "2:00 PM",
-    location: "Seminar Hall",
-    description:
-      "Meet fellow photography enthusiasts and learn basic composition techniques.",
-  },
-];
+// const initialEvents = [
+//   {
+//     id: 1,
+//     title: "MERN Stack Workshop",
+//     category: "Technology",
+//     date: "25 September 2026",
+//     time: "10:00 AM",
+//     location: "Computer Lab 1",
+//     description:
+//       "Learn the basics of MongoDB, Express, React, and Node.js through a practical workshop.",
+//   },
+//   {
+//     id: 2,
+//     title: "College Hackathon",
+//     category: "Technology",
+//     date: "28 September 2026",
+//     time: "9:00 AM",
+//     location: "Main Auditorium",
+//     description:
+//       "Form a team, solve a real problem, and present your solution to mentors.",
+//   },
+//   {
+//     id: 3,
+//     title: "Photography Club Meet",
+//     category: "Club",
+//     date: "30 September 2026",
+//     time: "2:00 PM",
+//     location: "Seminar Hall",
+//     description:
+//       "Meet fellow photography enthusiasts and learn basic composition techniques.",
+//   },
+// ];
 
 app.get("/", (req, res)=>{
     res.send("Backend is working")
@@ -137,8 +139,22 @@ app.post("/api/login", async (req, res) =>{
             message: "Invalid Email or Password"
     });
 }
+
+const token = jwt.sign(
+    {
+        userId: user._id,
+        email: user._email
+    },
+
+    process.env.JWT_SECRET,
+
+    {
+        expiresIn: "1h"
+    }
+)
 res.json({
     message: "Login Successful!",
+    token: token,
     user: {
         id: user._id,
         name: user.name,
@@ -146,6 +162,13 @@ res.json({
     }
 });
 });
+
+app.get("/api/profile", (req, res)=>{
+    res.json({
+        message: "You are Authenticated",
+        user: req.user
+    });
+})
 
 app.listen(5000, ()=>{
     console.log("Server is running on port 5000");
